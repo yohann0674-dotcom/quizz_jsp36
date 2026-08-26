@@ -130,28 +130,30 @@ function selectOption(selectedIndex) {
         return;
     }
 
-    // Gestion du mode Classique ou suite de la Mort Subite
+    // Gestion de la fin du mode Classique
     if (currentGameMode === 'classic' && currentIndex >= currentQuestions.length - 1) {
         setTimeout(() => {
             endGame(true);
         }, 2000);
-    } else if (currentGameMode === 'sudden-death') {
-        // En mort subite, si bonne réponse, on continue à la question suivante
-        currentIndex++;
-        setTimeout(() => {
-            loadQuestion();
-        }, 2000);
     } else {
-        // En mode classique, on affiche le bouton "Question suivante"
+        // Pour le mode classique OU en cas de bonne réponse en mort subite, on affiche le bouton "Question suivante"
         document.getElementById('next-btn').classList.remove('hidden');
     }
 }
 
-// --- QUESTION SUIVANTE (Mode Classique) ---
+// --- QUESTION SUIVANTE ---
 function nextQuestion() {
     currentIndex++;
-    if (currentIndex < currentQuestions.length) {
+    if (currentGameMode === 'classic' && currentIndex < currentQuestions.length) {
         loadQuestion();
+    } else if (currentGameMode === 'sudden-death') {
+        // En mort subite, on continue tant qu'il y a des questions dans la base
+        if (currentIndex < currentQuestions.length) {
+            loadQuestion();
+        } else {
+            // S'il n'y a plus de questions du tout dans la base, on reboucle ou on finit
+            endGame(true);
+        }
     } else {
         endGame(true);
     }
