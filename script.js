@@ -6,10 +6,12 @@ let currentIndex = 0;
 let score = 0;
 let userAnswers = [];
 let canClick = true;
+let gameIsOver = false; // Nouvelle variable pour contrôler la fin de partie manuellement
 
 // --- LANCEMENT DU QUIZ ---
 function startQuizWithSpecialty(mode) {
     currentGameMode = mode;
+    gameIsOver = false; // Réinitialisation au démarrage
     
     // Récupère la valeur sélectionnée dans le menu déroulant JSP
     const specialtySelect = document.getElementById('setting-specialty');
@@ -34,7 +36,7 @@ function startQuizWithSpecialty(mode) {
         return;
     }
 
-    // Mélange et sélectionne les questions (10 pour le classique, ou tout pour la mort subite)
+    // Mélange et sélectionne les questions
     let shuffled = [...selectedBank].sort(() => 0.5 - Math.random());
     
     if (currentGameMode === 'classic') {
@@ -116,51 +118,42 @@ function selectOption(selectedIndex) {
         optionsButtons[correctIndex].classList.add('option-correct');
     }
 
-    // Affiche la justification (toujours activée par défaut)
+    // Affiche la justification
     if (q.rationale) {
         document.getElementById('rationale-text').textContent = q.rationale;
         document.getElementById('rationale-container').classList.remove('hidden');
     }
 
-    // Gestion de la fin de partie en mode Mort Subite si mauvaise réponse
+    // Vérifie si la partie est terminée (erreur en mort subite ou dernière question atteinte)
     if (currentGameMode === 'sudden-death' && selectedIndex !== correctIndex) {
-        setTimeout(() => {
-            endGame(false);
-        }, 2000);
-        return;
+        gameIsOver = true;
+    } else if (currentIndex >= currentQuestions.length - 1) {
+        gameIsOver = true;
     }
 
-    // Gestion de la fin du mode Classique
-    if (currentGameMode === 'classic' && currentIndex >= currentQuestions.length - 1) {
-        setTimeout(() => {
-            endGame(true);
-        }, 2000);
+    // Affiche le bouton d'action avec le bon texte
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.classList.remove('hidden');
+    
+    if (gameIsOver) {
+        nextBtn.textContent = "Voir les résultats";
     } else {
-        // Pour le mode classique OU en cas de bonne réponse en mort subite, on affiche le bouton "Question suivante"
-        document.getElementById('next-btn').classList.remove('hidden');
+        nextBtn.textContent = "Question suivante";
     }
 }
 
-// --- QUESTION SUIVANTE ---
+// --- QUESTION SUIVANTE / FIN DE PARTIE ---
 function nextQuestion() {
-    currentIndex++;
-    if (currentGameMode === 'classic' && currentIndex < currentQuestions.length) {
-        loadQuestion();
-    } else if (currentGameMode === 'sudden-death') {
-        // En mort subite, on continue tant qu'il y a des questions dans la base
-        if (currentIndex < currentQuestions.length) {
-            loadQuestion();
-        } else {
-            // S'il n'y a plus de questions du tout dans la base, on reboucle ou on finit
-            endGame(true);
-        }
+    if (gameIsOver) {
+        endGame();
     } else {
-        endGame(true);
+        currentIndex++;
+        loadQuestion();
     }
 }
 
 // --- FIN DE PARTIE ---
-function endGame(completed) {
+function endGame() {
     document.getElementById('quiz-screen').classList.add('hidden');
     document.getElementById('result-screen').classList.remove('hidden');
     document.getElementById('home-btn-header').classList.add('hidden');
