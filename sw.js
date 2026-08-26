@@ -3,13 +3,14 @@ const CACHE_NAME = 'jsp-quiz-v1';
 
 // Liste des fichiers essentiels à mettre en cache pour le mode hors-ligne
 const urlsToCache = [
-  '/',
-  '/index.html',
-  // Ajoutez ici vos fichiers CSS, JS principaux et vos banques de questions :
-  // '/style.css',
-  // '/app.js',
-  // '/questions-jsp3.js',
-  // '/questions-jsp4.js'
+  './',
+  './index.html',
+  './manifest.json',
+  './script.js',
+  './questions-jsp1.js',
+  './questions-jsp2.js',
+  './questions-jsp3.js',
+  './questions-jsp4.js'
 ];
 
 // 1. Installation du Service Worker : mise en cache des fichiers de base
@@ -54,14 +55,12 @@ self.addEventListener('fetch', (event) => {
         // Sinon, on va le chercher sur le réseau
         return fetch(event.request).then(
           (networkResponse) => {
-            // Optionnel : on peut vérifier ici si la réponse est valide avant de la mettre en cache dynamique
             return networkResponse;
           }
         ).catch(() => {
           // Fallback en cas d'échec total (hors-ligne et fichier absent du cache initial)
-          // Vous pouvez retourner une page HTML de secours personnalisée si besoin.
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match('./index.html');
           }
         });
       })
